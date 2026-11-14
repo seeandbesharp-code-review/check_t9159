@@ -1,4 +1,32 @@
 ﻿
+const StrongPass = async () => {
+    try {
+        const password = document.querySelector("#password").value
+        const post = await fetch('api/strongPassword', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(password)
+
+        });
+        const dataPost = await post.json();
+        if (post.ok) {
+            const sPass = document.querySelector("#sPass")
+            sPass.value = dataPost.score
+            return dataPost.score
+        }
+        else {
+            throw ("שגיאה")
+        }
+    }
+    catch (e) {
+        alert(e);
+    }
+}
+
+
+
 const SignIn = async () => {
     try {
         const user = {
@@ -8,6 +36,9 @@ const SignIn = async () => {
             firstName: document.querySelector("#firstName").value,
             lastName: document.querySelector("#lastName").value
         }
+        const strong = await StrongPass();
+        if (strong.score < 3)
+            throw("סיסמא חלשה!")
         const post = await fetch('api/users', {
             method: 'POST',
             headers: {
@@ -21,6 +52,8 @@ const SignIn = async () => {
             console.log(dataPost.firstName)
             alert(`שלום ${dataPost.firstName}, נרשמת בהצלחה הנך משתמש מספר ${dataPost.id}`);
         }
+        else if (post.status == 400)
+            throw("הסיסמא חלשה")
         else {
             throw ("ההרשמה לא הצליחה, נסה שוב");
         }
@@ -30,30 +63,7 @@ const SignIn = async () => {
     }
         
 }
-const StrongPass = async () => {
-    try {
-        const password=document.querySelector("#password").value
-        const post = await fetch('api/strongPassword', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(password)
 
-        });
-        const dataPost = await post.json();
-        if (post.ok) {
-            const sPass = document.querySelector("#sPass")
-            sPass.value = dataPost.score
-        }
-        else {
-            throw ("שגיאה")
-        }
-    }
-    catch (e) {
-        alert(e);
-    }
-  }
 
 const LogIn = async () => {
     try {

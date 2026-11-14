@@ -11,9 +11,11 @@ namespace WebAPI.Controllers
     public class UsersController : ControllerBase
     {
         IUserService _usersService;
-        public UsersController(IUserService usersService)
+        IStrongPasswordService _strongPasswordService;
+        public UsersController(IUserService usersService, IStrongPasswordService strongPasswordService)
         {
             _usersService=usersService;
+            _strongPasswordService = strongPasswordService;
         }
         // GET: api/<UsersController>
         [HttpGet]
@@ -33,8 +35,13 @@ namespace WebAPI.Controllers
         [HttpPost]
         public ActionResult<User> Post([FromBody] User user)
         {
-            user = _usersService.AddUser(user);
-            return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+            if (_strongPasswordService.GetStrongPassword(user.Password).Score > 2)
+            {
+                user = _usersService.AddUser(user);
+                return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+            }
+            else
+                return BadRequest();
         }
 
         [HttpPost("Login")]
@@ -50,8 +57,12 @@ namespace WebAPI.Controllers
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] User updateUserDetails)
         {
-            _usersService.UpdateUser(id, updateUserDetails);
-            return Ok();
+            if (_strongPasswordService.GetStrongPassword(updateUserDetails.Password).Score > 2)
+            {
+                _usersService.UpdateUser(id, updateUserDetails);
+                return Ok();
+            }
+            return BadRequest();
         }
 
         // DELETE api/<UsersController>/5
